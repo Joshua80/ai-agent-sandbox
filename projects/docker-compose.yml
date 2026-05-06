@@ -1,0 +1,30 @@
+services:
+  # --- PROJECT 1: eShopOnWeb (.NET + SQL Server) ---
+  eshop-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=@someThingComplicated1234
+    ports:
+      - "1433:1433"
+    deploy:
+      resources:
+        limits:
+          memory: 2G # SQL Server requirement
+
+  # --- PROJECT 2: Medplum (Node + Postgres + Redis) ---
+  medplum-db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=medplum
+      - POSTGRES_PASSWORD=medplum
+    ports:
+      - "5433:5432" # Changed host port to 5433 to avoid any local conflicts
+    volumes:
+      - ./projects/medplum/postgres/:/docker-entrypoint-initdb.d/
+
+  medplum-cache:
+    image: redis:7
+    ports:
+      - "6380:6379" # Changed host port to 6380
+      
