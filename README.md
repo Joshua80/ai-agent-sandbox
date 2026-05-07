@@ -15,6 +15,22 @@ bash projects/scripts/run-sandbox.sh eshop
 bash projects/scripts/run-sandbox.sh medplum
 ```
 
+# Infrastructure Verification (Field Tested)
+Both environments have been validated to ensure AI agents can establish stable database connections.
+
+eShopOnWeb (SQL Server 2022)
+The sandbox uses the modern mcr.microsoft.com/mssql/server:2022-latest image. Verification requires the -C flag to trust server certificates and the updated tools path:
+
+Bash
+docker exec -it projects-eshop-db-1 /opt/mssql-tools18/bin/sqlcmd \
+   -S localhost -U SA -P 'Your_Password' -Q "SELECT name FROM sys.databases" -C
+   
+ Medplum (Postgres & Redis)
+Validated against custom roles defined in the orchestration layer. Use the following to check connectivity:
+
+Bash
+docker exec -it projects-medplum-db-1 psql -U medplum -d postgres -c "\l"
+
 ## Design Considerations
 I have addressed the core architectural challenges of building a reliable execution environment for AI agents:
 
@@ -52,7 +68,10 @@ To accommodate Windows host environments (Git Bash), I implemented path-mangling
 ## Output Capture
 The sandbox is pre-configured with an `outputs/` directory. The AI agent is expected to write its build logs and test results as **structured JSON** files here. This allows the parent "Harness" to programmatically assess success or failure without parsing raw terminal text.
 
----
+# Troubleshooting
+-bash: ./run-sandbox.sh: /bin/bash^M: bad interpreter: This occurs if the script is saved with Windows (CRLF) line endings. Fix: Toggle line endings to LF in VS Code and save.
+
+Login failed for user 'SA': Ensure the password used in the docker exec command matches the SA_PASSWORD variable in your local .env file.
 
 ### Final Verification Checklist
 *   [x] **Infrastructure as Code:** `docker-compose.yml` configured for eShop and Medplum.
